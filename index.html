@@ -1,0 +1,3018 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b6b4e">
+<title>AA 分账 · 多人在线记账</title>
+<style>
+  :root{
+    --bg:#f2f6f4;
+    --surface:#ffffff;
+    --surface-2:#f7faf8;
+    --ink:#14231e;
+    --muted:#6a7b74;
+    --line:#e3ebe7;
+    --accent:#0b8f65;
+    --accent-dark:#076b4c;
+    --accent-soft:#e3f6ee;
+    --danger:#d94a4f;
+    --danger-soft:#fdeced;
+    --warn:#a86400;
+    --warn-soft:#fff6e5;
+    --shadow:0 18px 42px -28px rgba(16,58,45,.38);
+    --radius:20px;
+    --safe-bottom:env(safe-area-inset-bottom, 0px);
+  }
+
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    min-height:100vh;
+    color:var(--ink);
+    background:
+      radial-gradient(1100px 600px at 8% -10%, #dff4ea 0%, transparent 60%),
+      radial-gradient(900px 500px at 105% 5%, #e8f0ff 0%, transparent 55%),
+      var(--bg);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+  button:disabled{cursor:not-allowed}
+  [hidden]{display:none !important}
+
+  .app{
+    width:min(100%,780px);
+    margin:0 auto;
+    padding:18px 16px calc(48px + var(--safe-bottom));
+  }
+
+  /* ---------- topbar ---------- */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:4px 4px 16px;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-width:0;
+  }
+  .brand-mark{
+    width:38px;
+    height:38px;
+    flex:0 0 auto;
+    display:grid;
+    place-items:center;
+    border-radius:13px;
+    background:linear-gradient(135deg,#12a878,#076b4c);
+    color:#fff;
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:.06em;
+    box-shadow:0 10px 20px -12px rgba(7,107,76,.8);
+  }
+  .brand-name{
+    display:flex;
+    flex-direction:column;
+    line-height:1.1;
+  }
+  .brand-name strong{
+    font-size:15px;
+    letter-spacing:-.01em;
+  }
+  .brand-name small{
+    margin-top:4px;
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:.13em;
+    color:var(--muted);
+  }
+  .top-status{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    flex:0 0 auto;
+    padding:6px 10px;
+    border:1px solid var(--line);
+    border-radius:999px;
+    background:rgba(255,255,255,.7);
+    color:var(--muted);
+    font-size:11px;
+    font-weight:600;
+    white-space:nowrap;
+  }
+  .top-status::before{
+    content:"";
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:var(--accent);
+    box-shadow:0 0 0 3px var(--accent-soft);
+  }
+
+  /* ---------- cards & layout ---------- */
+  .card{
+    position:relative;
+    margin-bottom:14px;
+    padding:18px;
+    border:1px solid rgba(255,255,255,.85);
+    border-radius:var(--radius);
+    background:var(--surface);
+    box-shadow:var(--shadow);
+  }
+  .card-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:16px;
+  }
+  .card-head h2,
+  .card-head h3{
+    margin:0;
+    font-size:17px;
+    line-height:1.25;
+    letter-spacing:-.02em;
+  }
+  .card-head p{
+    margin:5px 0 0;
+    color:var(--muted);
+    font-size:12.5px;
+  }
+  .step-badge{
+    flex:0 0 auto;
+    padding:5px 9px;
+    border-radius:999px;
+    background:var(--accent-soft);
+    color:var(--accent-dark);
+    font-size:10.5px;
+    font-weight:800;
+    letter-spacing:.08em;
+  }
+  .kicker{
+    display:block;
+    margin-bottom:6px;
+    color:var(--accent-dark);
+    font-size:10.5px;
+    font-weight:800;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+  }
+
+  /* ---------- hero ---------- */
+  .hero{
+    padding:14px 4px 22px;
+  }
+  .hero-eyebrow{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    margin-bottom:14px;
+    padding:6px 10px;
+    border:1px solid #cdeade;
+    border-radius:999px;
+    background:rgba(255,255,255,.62);
+    color:var(--accent-dark);
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.04em;
+  }
+  .hero-eyebrow::before{
+    content:"";
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:var(--accent);
+  }
+  .hero h1{
+    margin:0;
+    font-size:clamp(34px,9vw,54px);
+    line-height:1.04;
+    letter-spacing:-.055em;
+    font-weight:850;
+  }
+  .hero h1 span{
+    color:var(--accent-dark);
+    position:relative;
+  }
+  .hero h1 span::after{
+    content:"";
+    position:absolute;
+    left:0;
+    right:2px;
+    bottom:2px;
+    height:9px;
+    border-radius:4px;
+    background:rgba(18,168,120,.16);
+    z-index:-1;
+  }
+  .hero > p{
+    max-width:560px;
+    margin:16px 0 0;
+    color:var(--muted);
+    font-size:14px;
+    line-height:1.75;
+  }
+  .hero-chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:7px;
+    margin-top:17px;
+  }
+  .hero-chips span{
+    padding:6px 10px;
+    border:1px solid var(--line);
+    border-radius:999px;
+    background:rgba(255,255,255,.62);
+    color:#53665e;
+    font-size:11.5px;
+    font-weight:600;
+  }
+
+  .setup-columns{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:14px;
+  }
+  .setup-card{
+    margin-bottom:0;
+  }
+  .join-card{
+    background:linear-gradient(160deg,#fffdf7,#ffffff 62%);
+  }
+  .setup-note{
+    margin:16px 4px 0;
+    color:var(--muted);
+    font-size:11.5px;
+    line-height:1.7;
+    text-align:center;
+  }
+
+  /* ---------- config banner ---------- */
+  .config-banner{
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+    margin-bottom:14px;
+    padding:13px 15px;
+    border:1px solid #f0d39b;
+    border-radius:15px;
+    background:#fff9ec;
+    color:#7a4c00;
+    font-size:12.5px;
+    line-height:1.6;
+  }
+  .config-banner strong{
+    font-size:13px;
+  }
+  .config-banner code{
+    padding:1px 5px;
+    border-radius:5px;
+    background:rgba(122,76,0,.08);
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:11.5px;
+  }
+
+  /* ---------- forms ---------- */
+  .field{
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+    margin-bottom:14px;
+    min-width:0;
+  }
+  .field:last-child{
+    margin-bottom:0;
+  }
+  .field > label{
+    color:#34453e;
+    font-size:12.5px;
+    font-weight:700;
+    letter-spacing:.01em;
+  }
+  .input,
+  .textarea,
+  select.input{
+    width:100%;
+    min-height:48px;
+    padding:0 14px;
+    border:1px solid var(--line);
+    border-radius:14px;
+    outline:none;
+    background:var(--surface-2);
+    color:var(--ink);
+    font-size:15px;
+    transition:border-color .18s ease, box-shadow .18s ease, background .18s ease;
+    -webkit-appearance:none;
+    appearance:none;
+  }
+  .input::placeholder,
+  .textarea::placeholder{
+    color:#a2afa9;
+  }
+  .input:focus,
+  .textarea:focus,
+  select.input:focus{
+    border-color:var(--accent);
+    background:#fff;
+    box-shadow:0 0 0 4px var(--accent-soft);
+  }
+  .textarea{
+    min-height:92px;
+    padding:12px 14px;
+    line-height:1.65;
+    resize:vertical;
+  }
+  select.input{
+    padding-right:36px;
+    background-image:linear-gradient(45deg,transparent 50%,#788981 50%),linear-gradient(135deg,#788981 50%,transparent 50%);
+    background-position:calc(100% - 18px) 21px,calc(100% - 13px) 21px;
+    background-size:5px 5px,5px 5px;
+    background-repeat:no-repeat;
+  }
+  .hint{
+    color:var(--muted);
+    font-size:11.5px;
+    line-height:1.6;
+  }
+  .form-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:0;
+  }
+  .money-box{
+    display:flex;
+    align-items:center;
+    min-height:52px;
+    padding:0 14px;
+    border:1px solid var(--line);
+    border-radius:14px;
+    background:var(--surface-2);
+    transition:border-color .18s ease, box-shadow .18s ease, background .18s ease;
+  }
+  .money-box:focus-within{
+    border-color:var(--accent);
+    background:#fff;
+    box-shadow:0 0 0 4px var(--accent-soft);
+  }
+  .money-box > span{
+    flex:0 0 auto;
+    color:#7b8c84;
+    font-size:15px;
+    font-weight:700;
+  }
+  .money-box input{
+    width:100%;
+    min-width:0;
+    height:50px;
+    padding:0 0 0 7px;
+    border:0;
+    outline:0;
+    background:transparent;
+    color:var(--ink);
+    font-size:22px;
+    font-weight:750;
+    letter-spacing:-.02em;
+  }
+  .money-box input::placeholder{
+    color:#b3beb9;
+    font-weight:600;
+  }
+  .readonly-input{
+    color:var(--accent-dark);
+    font-weight:700;
+    background:#f0f8f4;
+    border-color:#d9ece3;
+  }
+  .readonly-input:focus{
+    box-shadow:none;
+    border-color:#d9ece3;
+  }
+
+  /* ---------- buttons ---------- */
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    min-height:46px;
+    padding:0 18px;
+    border:1px solid transparent;
+    border-radius:14px;
+    font-size:14px;
+    font-weight:750;
+    letter-spacing:.01em;
+    transition:transform .15s ease, filter .15s ease, background .15s ease, opacity .15s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .btn:active:not(:disabled){
+    transform:scale(.985);
+  }
+  .btn:disabled{
+    opacity:.56;
+  }
+  .btn-block{
+    width:100%;
+  }
+  .btn-primary{
+    background:linear-gradient(135deg,#12a878,#087a55);
+    color:#fff;
+    box-shadow:0 12px 24px -14px rgba(6,112,80,.9);
+  }
+  .btn-primary:hover:not(:disabled){
+    filter:brightness(1.03);
+  }
+  .btn-ghost{
+    border-color:var(--line);
+    background:var(--surface-2);
+    color:var(--ink);
+  }
+  .btn-ghost:hover:not(:disabled){
+    background:#f0f6f3;
+  }
+  .btn-danger{
+    background:var(--danger);
+    color:#fff;
+  }
+  .btn-sm{
+    min-height:36px;
+    padding:0 12px;
+    border-radius:11px;
+    font-size:12.5px;
+  }
+  .text-btn{
+    padding:2px 4px;
+    border:0;
+    background:transparent;
+    color:var(--accent-dark);
+    font-size:12px;
+    font-weight:700;
+  }
+  .text-btn:hover{
+    text-decoration:underline;
+  }
+
+  /* ---------- project header ---------- */
+  .project-bar{
+    overflow:hidden;
+    border:0;
+    background:
+      radial-gradient(420px 230px at 100% -10%, rgba(53,203,156,.32), transparent 60%),
+      linear-gradient(135deg,#0b3529,#0a5b43 58%,#087453);
+    color:#fff;
+    box-shadow:0 24px 46px -26px rgba(5,72,53,.68);
+  }
+  .project-bar::after{
+    content:"";
+    position:absolute;
+    right:-52px;
+    bottom:-80px;
+    width:190px;
+    height:190px;
+    border:1px solid rgba(255,255,255,.13);
+    border-radius:50%;
+    pointer-events:none;
+  }
+  .project-top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    position:relative;
+    z-index:1;
+  }
+  .overline{
+    display:block;
+    margin-bottom:7px;
+    color:rgba(255,255,255,.62);
+    font-size:10.5px;
+    font-weight:750;
+    letter-spacing:.15em;
+    text-transform:uppercase;
+  }
+  .project-bar h2{
+    margin:0;
+    font-size:clamp(23px,6vw,30px);
+    line-height:1.2;
+    letter-spacing:-.035em;
+    word-break:break-word;
+  }
+  .project-bar .project-sub{
+    margin:7px 0 0;
+    color:rgba(255,255,255,.62);
+    font-size:11.5px;
+  }
+  .project-actions{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+    gap:7px;
+    flex:0 0 auto;
+  }
+  .project-actions .btn{
+    min-height:34px;
+    padding:0 10px;
+    border-color:rgba(255,255,255,.18);
+    background:rgba(255,255,255,.11);
+    color:#fff;
+    font-size:11.5px;
+    border-radius:10px;
+    white-space:nowrap;
+  }
+  .project-actions .btn:hover:not(:disabled){
+    background:rgba(255,255,255,.18);
+  }
+  .project-id-row{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:18px;
+    position:relative;
+    z-index:1;
+    color:rgba(255,255,255,.62);
+    font-size:11.5px;
+  }
+  .project-id-row code{
+    padding:6px 10px;
+    border:1px solid rgba(255,255,255,.15);
+    border-radius:9px;
+    background:rgba(255,255,255,.11);
+    color:#fff;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:.09em;
+  }
+  .mini-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    min-height:29px;
+    padding:0 9px;
+    border:1px solid rgba(255,255,255,.2);
+    border-radius:8px;
+    background:rgba(255,255,255,.08);
+    color:#fff;
+    font-size:11px;
+    font-weight:650;
+  }
+  .mini-btn:hover{
+    background:rgba(255,255,255,.16);
+  }
+  .mini-btn svg{
+    width:13px;
+    height:13px;
+  }
+  .refresh-spin{
+    animation:spin .9s linear infinite;
+  }
+
+  /* ---------- identity ---------- */
+  .identity-card{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:13px;
+    background:linear-gradient(150deg,#ffffff,#fbfffd);
+  }
+  .identity-copy .field{
+    margin-bottom:0;
+  }
+  .identity-side{
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+    align-self:stretch;
+    padding:12px 14px;
+    border:1px solid #dbece4;
+    border-radius:14px;
+    background:#f3faf6;
+  }
+  .identity-side-label{
+    color:var(--muted);
+    font-size:10.5px;
+    font-weight:750;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+  }
+  .identity-side strong{
+    color:var(--accent-dark);
+    font-size:17px;
+    line-height:1.3;
+    word-break:break-word;
+  }
+  .identity-side small{
+    margin-top:2px;
+    color:var(--muted);
+    font-size:11px;
+    line-height:1.5;
+  }
+  .identity-hint{
+    grid-column:1/-1;
+    margin:-2px 0 0;
+    color:var(--muted);
+    font-size:11.5px;
+  }
+
+  /* ---------- split mode ---------- */
+  .segmented{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:4px;
+    padding:4px;
+    border:1px solid var(--line);
+    border-radius:14px;
+    background:var(--surface-2);
+  }
+  .mode-option{
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:40px;
+    padding:0 8px;
+    border-radius:11px;
+    color:var(--muted);
+    font-size:13px;
+    font-weight:700;
+    text-align:center;
+    cursor:pointer;
+    transition:background .2s ease, color .2s ease, box-shadow .2s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .mode-option input{
+    position:absolute;
+    width:1px;
+    height:1px;
+    opacity:0;
+    pointer-events:none;
+  }
+  .mode-option.is-selected{
+    background:#fff;
+    color:var(--accent-dark);
+    box-shadow:0 5px 16px -12px rgba(16,58,45,.55);
+  }
+  .mode-option:focus-within{
+    outline:2px solid var(--accent);
+    outline-offset:2px;
+  }
+
+  .split-panel{
+    display:grid;
+    grid-template-rows:0fr;
+    opacity:0;
+    transform:translateY(-3px);
+    transition:grid-template-rows .32s cubic-bezier(.2,.8,.2,1), opacity .2s ease, transform .3s ease;
+  }
+  .split-panel.is-active{
+    grid-template-rows:1fr;
+    opacity:1;
+    transform:none;
+  }
+  .split-inner{
+    min-height:0;
+    overflow:hidden;
+  }
+  .split-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin:13px 1px 10px;
+    color:#40534b;
+    font-size:12.5px;
+    font-weight:700;
+  }
+  .panel-tip{
+    margin:13px 1px 10px;
+    color:var(--muted);
+    font-size:11.5px;
+    line-height:1.6;
+  }
+  .member-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+  }
+  .member-check{
+    position:relative;
+    display:block;
+    min-width:0;
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .member-check input{
+    position:absolute;
+    width:1px;
+    height:1px;
+    opacity:0;
+    pointer-events:none;
+  }
+  .member-check-face{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    min-height:48px;
+    padding:8px 10px;
+    border:1px solid var(--line);
+    border-radius:13px;
+    background:var(--surface-2);
+    color:#42534c;
+    font-size:13px;
+    font-weight:650;
+    overflow:hidden;
+    transition:border-color .18s ease, background .18s ease, box-shadow .18s ease;
+  }
+  .member-check-face > span:last-child{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .member-check input:checked + .member-check-face{
+    border-color:#a8ddc6;
+    background:var(--accent-soft);
+    color:var(--accent-dark);
+    box-shadow:inset 0 0 0 1px #a8ddc6;
+  }
+  .member-check input:focus-visible + .member-check-face{
+    outline:2px solid var(--accent);
+    outline-offset:2px;
+  }
+  .avatar{
+    display:inline-grid;
+    place-items:center;
+    flex:0 0 auto;
+    width:28px;
+    height:28px;
+    border-radius:9px;
+    background:hsl(var(--hue,160) 52% 91%);
+    color:hsl(var(--hue,160) 48% 29%);
+    font-size:11px;
+    font-weight:850;
+    line-height:1;
+    text-transform:uppercase;
+  }
+  .live-hint{
+    min-height:18px;
+    margin:10px 2px 14px;
+    color:var(--muted);
+    font-size:11.5px;
+    line-height:1.55;
+  }
+  .live-hint.is-warn{
+    color:var(--warn);
+  }
+
+  .custom-list{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .custom-row{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 132px;
+    align-items:center;
+    gap:10px;
+    padding:8px 9px 8px 10px;
+    border:1px solid var(--line);
+    border-radius:13px;
+    background:var(--surface-2);
+  }
+  .custom-name{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    min-width:0;
+    color:#40534b;
+    font-size:13px;
+    font-weight:650;
+  }
+  .custom-name span:last-child{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .mini-money{
+    display:flex;
+    align-items:center;
+    gap:4px;
+    min-height:38px;
+    padding:0 9px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:#fff;
+    transition:border-color .18s ease, box-shadow .18s ease;
+  }
+  .mini-money:focus-within{
+    border-color:var(--accent);
+    box-shadow:0 0 0 3px var(--accent-soft);
+  }
+  .mini-money span{
+    color:#9aa8a2;
+    font-size:12px;
+  }
+  .mini-money input{
+    width:100%;
+    min-width:0;
+    height:36px;
+    padding:0;
+    border:0;
+    outline:0;
+    background:transparent;
+    color:var(--ink);
+    font-size:14px;
+    font-weight:650;
+    text-align:right;
+  }
+  .mini-money input::placeholder{color:#b5c0bb}
+  .mini-money.is-invalid{
+    border-color:#efa5a8;
+    box-shadow:0 0 0 3px var(--danger-soft);
+  }
+  .sum-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:7px 12px;
+    margin:11px 1px 14px;
+    padding:10px 12px;
+    border-radius:12px;
+    background:#f4f8f6;
+    color:var(--muted);
+    font-size:11.5px;
+  }
+  .sum-bar b{
+    color:var(--ink);
+    font-size:13px;
+  }
+  .sum-divider{
+    margin:0 5px;
+    color:#c3cdc8;
+  }
+  .sum-state{
+    font-weight:700;
+  }
+  .sum-state.is-ok{color:var(--accent-dark)}
+  .sum-state.is-warn{color:var(--warn)}
+  .sum-state.is-error{color:var(--danger)}
+
+  /* ---------- settlement ---------- */
+  .settlement-card::before{
+    content:"";
+    position:absolute;
+    top:0;
+    left:18px;
+    right:18px;
+    height:3px;
+    border-radius:0 0 4px 4px;
+    background:linear-gradient(90deg,#12a878,#79d5b2);
+  }
+  .balance-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+  }
+  .balance-item{
+    min-width:0;
+    padding:11px 12px;
+    border:1px solid var(--line);
+    border-radius:13px;
+    background:var(--surface-2);
+  }
+  .balance-person{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    min-width:0;
+    color:#42534c;
+    font-size:12.5px;
+    font-weight:700;
+  }
+  .balance-person .name{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .balance-person .me{
+    flex:0 0 auto;
+    padding:1px 5px;
+    border-radius:999px;
+    background:#e8f4ee;
+    color:var(--accent-dark);
+    font-size:9.5px;
+    font-weight:800;
+  }
+  .balance-net{
+    margin-top:7px;
+    font-size:14px;
+    font-weight:800;
+    letter-spacing:-.01em;
+  }
+  .balance-net.positive{color:var(--accent-dark)}
+  .balance-net.negative{color:var(--danger)}
+  .balance-net.zero{color:var(--muted);font-weight:650}
+  .subsection-title{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin:17px 1px 9px;
+    color:#40534b;
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:.01em;
+  }
+  .subsection-title::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background:var(--line);
+  }
+  .transfer-list{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    margin:0;
+    padding:0;
+    list-style:none;
+  }
+  .transfer-item{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    padding:10px 11px;
+    border:1px solid var(--line);
+    border-radius:13px;
+    background:#fbfdfc;
+  }
+  .transfer-route{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    min-width:0;
+    color:#40534b;
+    font-size:13px;
+  }
+  .transfer-route b{
+    max-width:88px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-weight:750;
+  }
+  .transfer-arrow{
+    color:#9aaba4;
+    font-size:13px;
+  }
+  .transfer-amount{
+    margin-left:auto;
+    flex:0 0 auto;
+    color:var(--accent-dark);
+    font-size:15px;
+    font-weight:850;
+    letter-spacing:-.02em;
+  }
+  .settled{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    padding:12px;
+    border:1px solid #cfeadd;
+    border-radius:13px;
+    background:#f0fbf6;
+    color:var(--accent-dark);
+    font-size:12.5px;
+    font-weight:700;
+    line-height:1.5;
+  }
+  .settled-icon{
+    display:grid;
+    place-items:center;
+    flex:0 0 auto;
+    width:27px;
+    height:27px;
+    border-radius:50%;
+    background:#d9f3e7;
+    font-size:14px;
+  }
+  .empty{
+    padding:26px 12px 24px;
+    color:var(--muted);
+    text-align:center;
+  }
+  .empty-icon{
+    display:grid;
+    place-items:center;
+    width:44px;
+    height:44px;
+    margin:0 auto 9px;
+    border-radius:15px;
+    background:var(--surface-2);
+    font-size:21px;
+  }
+  .empty strong{
+    display:block;
+    color:#4a5b54;
+    font-size:13.5px;
+  }
+  .empty span{
+    display:block;
+    margin-top:4px;
+    font-size:11.5px;
+  }
+  .notice{
+    margin-top:11px;
+    padding:10px 12px;
+    border:1px solid #f0d39b;
+    border-radius:11px;
+    background:var(--warn-soft);
+    color:#7a4c00;
+    font-size:11.5px;
+    line-height:1.55;
+  }
+
+  /* ---------- expense list ---------- */
+  .expense-item{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    padding:14px 0;
+    border-top:1px solid var(--line);
+  }
+  .expense-item:first-child{
+    padding-top:0;
+    border-top:0;
+  }
+  .expense-item:last-child{
+    padding-bottom:0;
+  }
+  .expense-body{
+    flex:1;
+    min-width:0;
+  }
+  .expense-top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .expense-title{
+    margin:0;
+    color:#243a31;
+    font-size:15px;
+    font-weight:750;
+    line-height:1.4;
+    letter-spacing:-.01em;
+    word-break:break-word;
+  }
+  .expense-amount{
+    flex:0 0 auto;
+    color:var(--ink);
+    font-size:17px;
+    font-weight:850;
+    line-height:1.25;
+    letter-spacing:-.035em;
+    white-space:nowrap;
+  }
+  .expense-meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:4px 9px;
+    margin-top:5px;
+    color:var(--muted);
+    font-size:11.5px;
+    line-height:1.55;
+  }
+  .expense-meta b{
+    color:#53665e;
+    font-weight:700;
+  }
+  .expense-split{
+    margin-top:8px;
+    padding:8px 10px;
+    border-radius:10px;
+    background:var(--surface-2);
+    color:#52645c;
+    font-size:11.5px;
+    line-height:1.7;
+    word-break:break-word;
+  }
+  .split-label{
+    color:#899992;
+    font-weight:650;
+  }
+  .split-person{
+    display:inline-block;
+    margin-right:0;
+  }
+  .split-person b{
+    color:#40534b;
+    font-weight:750;
+  }
+  .split-sep{
+    display:inline-block;
+    margin:0 5px;
+    color:#a0aea8;
+  }
+  .tag{
+    display:inline-block;
+    margin:2px 5px 0 0;
+    padding:1px 7px;
+    border:1px solid #dbe7e1;
+    border-radius:999px;
+    background:#fff;
+    color:#53665e;
+    font-size:11px;
+    font-weight:650;
+    line-height:1.6;
+  }
+  .tag.me{
+    border-color:#bfe5d3;
+    background:#effaf4;
+    color:var(--accent-dark);
+  }
+  .icon-btn{
+    display:grid;
+    place-items:center;
+    flex:0 0 auto;
+    width:34px;
+    height:34px;
+    margin-top:1px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:#fff;
+    color:#98a7a1;
+    transition:color .15s ease, border-color .15s ease, background .15s ease;
+  }
+  .icon-btn:hover{
+    border-color:#f0b9bb;
+    background:var(--danger-soft);
+    color:var(--danger);
+  }
+  .icon-btn svg{
+    width:16px;
+    height:16px;
+  }
+  .list-loading{
+    padding:18px 0;
+    color:var(--muted);
+    font-size:12px;
+    text-align:center;
+  }
+
+  /* ---------- toast ---------- */
+  .toast-container{
+    position:fixed;
+    left:50%;
+    bottom:calc(18px + var(--safe-bottom));
+    transform:translateX(-50%);
+    z-index:1200;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    width:min(92vw,420px);
+    pointer-events:none;
+  }
+  .toast{
+    display:flex;
+    align-items:flex-start;
+    gap:9px;
+    padding:12px 14px;
+    border-radius:14px;
+    background:rgba(20,35,30,.96);
+    color:#fff;
+    box-shadow:0 16px 40px -20px rgba(0,0,0,.65);
+    font-size:13px;
+    line-height:1.5;
+    opacity:0;
+    transform:translateY(8px);
+    transition:opacity .2s ease, transform .2s ease;
+    pointer-events:auto;
+    backdrop-filter:blur(10px);
+  }
+  .toast.is-visible{
+    opacity:1;
+    transform:translateY(0);
+  }
+  .toast.is-leaving{
+    opacity:0;
+    transform:translateY(6px);
+  }
+  .toast-dot{
+    flex:0 0 auto;
+    width:7px;
+    height:7px;
+    margin-top:6px;
+    border-radius:50%;
+    background:#f4c25d;
+  }
+  .toast.success .toast-dot{background:#3ed6a0}
+  .toast.error .toast-dot{background:#ff7d83}
+  .toast-text{
+    min-width:0;
+    word-break:break-word;
+  }
+
+  /* ---------- dialog ---------- */
+  .confirm-dialog{
+    width:min(92vw,380px);
+    padding:22px;
+    border:0;
+    border-radius:22px;
+    background:var(--surface);
+    color:var(--ink);
+    box-shadow:0 40px 90px -30px rgba(4,31,22,.55);
+  }
+  .confirm-dialog::backdrop{
+    background:rgba(7,20,15,.44);
+    backdrop-filter:blur(3px);
+  }
+  .confirm-dialog[open]{
+    animation:dialogIn .18s ease-out;
+  }
+  .dialog-icon{
+    display:grid;
+    place-items:center;
+    width:42px;
+    height:42px;
+    margin-bottom:13px;
+    border-radius:14px;
+    background:var(--danger-soft);
+    color:var(--danger);
+    font-size:19px;
+  }
+  .confirm-dialog h3{
+    margin:0;
+    font-size:18px;
+    letter-spacing:-.02em;
+  }
+  .confirm-dialog p{
+    margin:8px 0 20px;
+    color:var(--muted);
+    font-size:12.5px;
+    line-height:1.7;
+    word-break:break-word;
+  }
+  .dialog-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:9px;
+  }
+  .dialog-actions .btn{
+    min-width:86px;
+  }
+
+  /* ---------- loading ---------- */
+  .loading-overlay{
+    position:fixed;
+    inset:0;
+    z-index:1300;
+    display:grid;
+    place-content:center;
+    justify-items:center;
+    gap:13px;
+    background:rgba(242,246,244,.76);
+    backdrop-filter:blur(6px);
+  }
+  .spinner{
+    width:34px;
+    height:34px;
+    border:3px solid rgba(11,143,101,.18);
+    border-top-color:var(--accent);
+    border-radius:50%;
+    animation:spin .8s linear infinite;
+  }
+  .loading-overlay p{
+    margin:0;
+    color:var(--muted);
+    font-size:12.5px;
+    font-weight:650;
+  }
+
+  .footer{
+    padding:18px 4px 0;
+    color:#93a19b;
+    font-size:10.5px;
+    line-height:1.7;
+    text-align:center;
+  }
+  .footer strong{
+    color:#71857c;
+    font-weight:700;
+  }
+
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes dialogIn{from{opacity:0;transform:translateY(7px) scale(.985)}to{opacity:1;transform:none}}
+
+  @media (min-width:560px){
+    .app{padding:22px 20px calc(56px + var(--safe-bottom))}
+    .card{padding:21px}
+    .form-grid{grid-template-columns:1.35fr .8fr;gap:12px}
+    .identity-card{grid-template-columns:1.15fr .85fr;align-items:stretch}
+    .identity-hint{grid-column:1/-1}
+    .balance-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  }
+  @media (min-width:720px){
+    .setup-columns{grid-template-columns:1.22fr .78fr;align-items:start}
+    .hero{padding-top:26px}
+    .join-card{margin-top:0}
+    .member-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  }
+  @media (max-width:400px){
+    .member-grid{grid-template-columns:1fr}
+    .custom-row{grid-template-columns:minmax(0,1fr) 118px}
+    .project-actions .btn{min-width:40px;min-height:40px;padding:0 8px}
+    .project-actions .btn span{display:none}
+    .project-actions .btn svg{width:15px;height:15px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{
+      animation-duration:.001ms !important;
+      transition-duration:.001ms !important;
+      scroll-behavior:auto !important;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">AA</div>
+      <div class="brand-name">
+        <strong>多人在线分账</strong>
+        <small>SPLIT THE BILL</small>
+      </div>
+    </div>
+    <div class="top-status">手动刷新</div>
+  </header>
+
+  <div id="configBanner" class="config-banner" hidden>
+    <strong>还没配置数据库</strong>
+    <span>请编辑 <code>index.html</code> 顶部的 <code>SUPABASE_URL</code> 和 <code>SUPABASE_KEY</code>，保存后刷新页面。</span>
+  </div>
+
+  <!-- ================= 创建 / 加入 ================= -->
+  <section id="setupView" class="view">
+    <div class="hero">
+      <div class="hero-eyebrow">不用登录，发个链接就能一起记</div>
+      <h1>一起花钱，<br><span>清楚分账。</span></h1>
+      <p>创建项目，把项目 ID 发给朋友。谁付了钱、每个人该分摊多少、最后谁转给谁，一页算清。</p>
+      <div class="hero-chips">
+        <span>精确到分</span>
+        <span>两种分摊模式</span>
+        <span>自动抵消债务</span>
+      </div>
+    </div>
+
+    <div class="setup-columns">
+      <div class="card setup-card">
+        <div class="card-head">
+          <div>
+            <span class="kicker">NEW PROJECT</span>
+            <h2>创建项目</h2>
+            <p>先写项目名和成员，稍后选择“我是谁”。</p>
+          </div>
+          <span class="step-badge">01</span>
+        </div>
+        <form id="createForm" novalidate>
+          <div class="field">
+            <label for="projectName">项目名称</label>
+            <input id="projectName" class="input" type="text" maxlength="60" autocomplete="off" placeholder="例如：周末露营">
+          </div>
+          <div class="field">
+            <label for="memberNames">成员名单</label>
+            <textarea id="memberNames" class="textarea" maxlength="1200" placeholder="小明，小红，阿杰"></textarea>
+            <span class="hint">用逗号分隔，中英文逗号都可以，最多 50 人。</span>
+          </div>
+          <button id="createBtn" class="btn btn-primary btn-block" type="submit">创建项目</button>
+        </form>
+      </div>
+
+      <div class="card setup-card join-card">
+        <div class="card-head">
+          <div>
+            <span class="kicker">JOIN</span>
+            <h2>加入项目</h2>
+            <p>输入朋友发来的项目 ID。</p>
+          </div>
+          <span class="step-badge">02</span>
+        </div>
+        <form id="joinForm" novalidate>
+          <div class="field">
+            <label for="joinId">项目 ID</label>
+            <input id="joinId" class="input" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="AA-XXXXXX">
+            <span class="hint">也可以直接粘贴完整的项目链接。</span>
+          </div>
+          <button id="joinBtn" class="btn btn-ghost btn-block" type="submit">加入项目</button>
+        </form>
+      </div>
+    </div>
+
+    <p class="setup-note">项目 ID 是公开的，请只分享给一起记账的人。<br>数据保存在 Supabase，点击项目内的“刷新”获取最新账目。</p>
+  </section>
+
+  <!-- ================= 项目主界面 ================= -->
+  <section id="projectView" class="view" hidden>
+    <div class="card project-bar">
+      <div class="project-top">
+        <div>
+          <span class="overline">CURRENT PROJECT</span>
+          <h2 id="projectNameTitle">—</h2>
+          <p id="projectMemberCount" class="project-sub"></p>
+        </div>
+        <div class="project-actions">
+          <button id="refreshBtn" class="btn btn-ghost" type="button" aria-label="刷新数据" title="刷新数据">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+            <span>刷新</span>
+          </button>
+          <button id="leaveBtn" class="btn btn-ghost" type="button" aria-label="退出当前项目" title="退出当前项目">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+            <span>退出</span>
+          </button>
+        </div>
+      </div>
+      <div class="project-id-row">
+        <span>项目 ID</span>
+        <code id="projectIdValue">—</code>
+        <button id="copyIdBtn" class="mini-btn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          复制
+        </button>
+        <button id="shareBtn" class="mini-btn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4"/><path d="m8.6 13.5 6.8 4"/></svg>
+          分享链接
+        </button>
+      </div>
+    </div>
+
+    <div class="card identity-card">
+      <div class="identity-copy">
+        <div class="field">
+          <label for="identitySelect">我是谁</label>
+          <select id="identitySelect" class="input">
+            <option value="">请选择你是谁</option>
+          </select>
+          <span class="hint">选择后，付款人会自动锁定为你；想换人可随时切换。</span>
+        </div>
+      </div>
+      <div class="identity-side">
+        <span class="identity-side-label">当前身份</span>
+        <strong id="identityBadge">未选择</strong>
+        <small>付款人必须等于当前身份</small>
+      </div>
+      <p id="identityHint" class="identity-hint">先选择“我是谁”，再开始记账。</p>
+    </div>
+
+    <!-- 记账 -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <span class="kicker">NEW EXPENSE</span>
+          <h3>记一笔</h3>
+          <p>金额按“元”输入，保存时自动换算成整数分。</p>
+        </div>
+        <span class="step-badge">01</span>
+      </div>
+
+      <form id="expenseForm" novalidate>
+        <div class="form-grid">
+          <div class="field">
+            <label for="expenseTitle">账目名称</label>
+            <input id="expenseTitle" class="input" type="text" maxlength="60" autocomplete="off" placeholder="例如：火锅晚餐">
+          </div>
+          <div class="field">
+            <label for="expenseAmount">总金额（元）</label>
+            <div class="money-box">
+              <span>¥</span>
+              <input id="expenseAmount" type="text" inputmode="decimal" autocomplete="off" placeholder="0.00">
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="payerInput">付款人</label>
+          <input id="payerInput" class="input readonly-input" type="text" readonly placeholder="请先选择身份">
+        </div>
+
+        <div class="field">
+          <label>分摊方式</label>
+          <div class="segmented" role="radiogroup" aria-label="分摊方式">
+            <label class="mode-option is-selected" data-mode="equal">
+              <input type="radio" name="splitMode" value="equal" checked>
+              <span>平均分摊</span>
+            </label>
+            <label class="mode-option" data-mode="custom">
+              <input type="radio" name="splitMode" value="custom">
+              <span>自定义金额</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 模式 A：平均分摊 -->
+        <div id="equalPanel" class="split-panel is-active">
+          <div class="split-inner">
+            <div class="split-head">
+              <span>参与分摊的成员</span>
+              <button id="selectAllBtn" class="text-btn" type="button">全不选</button>
+            </div>
+            <div id="equalMembers" class="member-grid"></div>
+            <p id="equalShareHint" class="live-hint" aria-live="polite">输入总金额后显示每人份额。</p>
+          </div>
+        </div>
+
+        <!-- 模式 B：自定义金额 -->
+        <div id="customPanel" class="split-panel" inert aria-hidden="true">
+          <div class="split-inner">
+            <p class="panel-tip">填写每位成员承担的金额；留空或填 0 视为不参与。</p>
+            <div id="customMembers" class="custom-list"></div>
+            <div class="sum-bar" aria-live="polite">
+              <div>合计 <b id="customTotal">¥0.00</b><span class="sum-divider">/</span>总额 <b id="customTarget">—</b></div>
+              <span id="customDiff" class="sum-state">—</span>
+            </div>
+          </div>
+        </div>
+
+        <button id="saveExpenseBtn" class="btn btn-primary btn-block" type="submit">保存账目</button>
+      </form>
+    </div>
+
+    <!-- 结算 -->
+    <div class="card settlement-card">
+      <div class="card-head">
+        <div>
+          <span class="kicker">SETTLEMENT</span>
+          <h3>结算</h3>
+          <p id="settlementMeta">还没有账目</p>
+        </div>
+        <span class="step-badge">02</span>
+      </div>
+      <div id="settlementBody">
+        <div class="empty">
+          <div class="empty-icon" aria-hidden="true">Σ</div>
+          <strong>还没有可以结算的账目</strong>
+          <span>记录第一笔后，这里会自动算出净余额和转账方案。</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 账目明细 -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <span class="kicker">EXPENSES</span>
+          <h3>账目明细</h3>
+          <p><span id="expenseCount">0</span> 笔记录</p>
+        </div>
+        <span class="step-badge">03</span>
+      </div>
+      <div id="expenseList">
+        <div class="empty">
+          <div class="empty-icon" aria-hidden="true">¥</div>
+          <strong>还没有账目</strong>
+          <span>在上面记下第一笔吧。</span>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <strong>AA 分账</strong> · 数据存储于 Supabase<br>
+      不做实时推送，点击“刷新”获取最新账目 · <span id="year"></span>
+    </footer>
+  </section>
+</div>
+
+<div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+<dialog id="confirmDialog" class="confirm-dialog">
+  <div class="dialog-icon" aria-hidden="true">!</div>
+  <h3 id="confirmTitle">确认操作？</h3>
+  <p id="confirmMessage"></p>
+  <div class="dialog-actions">
+    <button id="confirmCancel" class="btn btn-ghost" type="button">取消</button>
+    <button id="confirmOk" class="btn btn-danger" type="button">删除</button>
+  </div>
+</dialog>
+
+<div id="loadingOverlay" class="loading-overlay" hidden>
+  <div class="spinner" aria-hidden="true"></div>
+  <p id="loadingText">正在加载…</p>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://lvlbwpqjdhxypozcjkuc.supabase.co/rest/v1/';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2bGJ3cHFqZGh4eXBvemNqa3VjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI0OTc4NzEsImV4cCI6MjEwODA3Mzg3MX0.UqTFKbCe2oR9eLdOZQ9JoyL5Agrd-yfSn0T9uovzhyM';
+
+(function () {
+  'use strict';
+
+  /* ============================================================
+   * 配置与常量
+   * ============================================================ */
+  const MAX_MEMBERS = 50;
+  const MAX_MEMBER_NAME = 30;
+  const MAX_PROJECT_NAME = 60;
+  const MAX_TITLE = 60;
+  const MAX_AMOUNT_CENTS = 1000000000; // ¥10,000,000.00
+  const ID_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const RAWS_URL = String(SUPABASE_URL || '').trim().replace(/\/+$/, '');
+  const API_BASE = /\/rest\/v1$/.test(RAWS_URL) ? RAWS_URL : RAWS_URL + '/rest/v1';
+  const CONFIG_OK = /^https?:\/\//i.test(RAWS_URL)
+    && Boolean(SUPABASE_KEY)
+    && !RAWS_URL.includes('YOUR_')
+    && !String(SUPABASE_KEY).includes('YOUR_');
+
+  const els = {};
+  const state = {
+    project: null,
+    expenses: [],
+    currentUser: '',
+    splitMode: 'equal',
+    loading: false
+  };
+  let confirmResolve = null;
+
+  /* ============================================================
+   * 基础工具
+   * ============================================================ */
+  const $ = (selector, root) => (root || document).querySelector(selector);
+  const $$ = (selector, root) => Array.from((root || document).querySelectorAll(selector));
+
+  function escapeHtml(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function (ch) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+    });
+  }
+
+  function q(value) {
+    return encodeURIComponent(String(value));
+  }
+
+  function parseHash() {
+    const match = String(location.hash || '').match(/^#\/p\/([A-Za-z0-9_-]+)$/);
+    return match ? match[1].toUpperCase() : '';
+  }
+
+  function extractProjectId(raw) {
+    const text = String(raw || '').trim();
+    const fromUrl = text.match(/#\/p\/([A-Za-z0-9_-]+)/);
+    if (fromUrl) return fromUrl[1].toUpperCase();
+    return text.replace(/\s+/g, '').toUpperCase();
+  }
+
+  function parseMembers(raw) {
+    const names = String(raw || '')
+      .split(/[,，、\n\r]+/)
+      .map(function (name) { return name.trim(); })
+      .filter(Boolean);
+    const result = [];
+    const seen = new Set();
+    for (const name of names) {
+      if (name.length > MAX_MEMBER_NAME) {
+        throw new Error('成员名“' + name.slice(0, 12) + '…”超过 ' + MAX_MEMBER_NAME + ' 个字符');
+      }
+      if (!seen.has(name)) {
+        seen.add(name);
+        result.push(name);
+      }
+    }
+    if (!result.length) throw new Error('请至少填写一位成员');
+    if (result.length > MAX_MEMBERS) throw new Error('成员最多 ' + MAX_MEMBERS + ' 位');
+    return result;
+  }
+
+  // 将“元”字符串精确转成整数分。空字符串按 allowZero 决定。
+  function parseYuanToCents(raw, options) {
+    const allowZero = Boolean(options && options.allowZero);
+    let text = String(raw == null ? '' : raw).trim().replace(/[,\s，]/g, '');
+    if (text === '') return allowZero ? 0 : null;
+    if (/^\.\d{1,2}$/.test(text)) text = '0' + text;
+    if (!/^\d+(?:\.\d{0,2})?$/.test(text)) return null;
+
+    const parts = text.split('.');
+    const whole = Number(parts[0]);
+    const fraction = (parts[1] || '') + '00';
+    const cents = whole * 100 + Number(fraction.slice(0, 2));
+
+    if (!Number.isSafeInteger(cents)) return null;
+    if (cents < 0 || cents > MAX_AMOUNT_CENTS) return null;
+    if (!allowZero && cents === 0) return null;
+    return cents;
+  }
+
+  function formatCents(cents) {
+    const value = Math.round(Number(cents) || 0);
+    const sign = value < 0 ? '-' : '';
+    const abs = Math.abs(value);
+    const yuan = Math.floor(abs / 100).toLocaleString('zh-CN');
+    const fen = String(abs % 100).padStart(2, '0');
+    return sign + '¥' + yuan + '.' + fen;
+  }
+
+  function splitEqual(totalCents, names) {
+    const count = names.length;
+    const base = Math.floor(totalCents / count);
+    const remainder = totalCents % count;
+    const details = {};
+    names.forEach(function (name, index) {
+      details[name] = base + (index < remainder ? 1 : 0);
+    });
+    return details;
+  }
+
+  function hueFor(name) {
+    let hue = 0;
+    for (const ch of String(name || '')) {
+      hue = (hue * 31 + ch.codePointAt(0)) % 360;
+    }
+    return hue;
+  }
+
+  function avatarHtml(name) {
+    const chars = Array.from(String(name || '?'));
+    const initial = chars[0] || '?';
+    return '<span class="avatar" style="--hue:' + hueFor(name) + '">' + escapeHtml(initial) + '</span>';
+  }
+
+  function formatDate(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    const now = new Date();
+    const pad = function (n) { return String(n).padStart(2, '0'); };
+    const prefix = date.getFullYear() === now.getFullYear() ? '' : date.getFullYear() + '-';
+    return prefix + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) + ' ' + pad(date.getHours()) + ':' + pad(date.getMinutes());
+  }
+
+  function humanError(error) {
+    const message = String((error && error.message) || error || '未知错误');
+    if (/row-level security|permission denied|violates row-level/i.test(message)) {
+      return '没有权限执行此操作，请确认当前身份是否正确';
+    }
+    if (/Failed to fetch|NetworkError|Load failed/i.test(message)) {
+      return '无法连接数据库，请检查 API 地址、Key 和网络';
+    }
+    if (/duplicate key/i.test(message)) {
+      return '数据已存在，请重试';
+    }
+    if (/split_sum|expenses_split_sum_check/i.test(message)) {
+      return '分摊金额合计必须严格等于总金额';
+    }
+    return message;
+  }
+
+  function storageGet(key) {
+    try { return localStorage.getItem(key); } catch (error) { return null; }
+  }
+  function storageSet(key, value) {
+    try { localStorage.setItem(key, value); } catch (error) { /* ignore */ }
+  }
+  function storageRemove(key) {
+    try { localStorage.removeItem(key); } catch (error) { /* ignore */ }
+  }
+  function identityKey(projectId) {
+    return 'aa_identity_' + projectId;
+  }
+
+  function makeProjectId() {
+    const bytes = new Uint8Array(6);
+    if (globalThis.crypto && typeof globalThis.crypto.getRandomValues === 'function') {
+      globalThis.crypto.getRandomValues(bytes);
+    } else {
+      for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+    }
+    let suffix = '';
+    for (let i = 0; i < bytes.length; i++) {
+      suffix += ID_ALPHABET[bytes[i] % ID_ALPHABET.length];
+    }
+    return 'AA-' + suffix;
+  }
+
+  function makeExpenseId() {
+    if (globalThis.crypto && typeof globalThis.crypto.randomUUID === 'function') {
+      return globalThis.crypto.randomUUID();
+    }
+    return 'e_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 12);
+  }
+
+  function toBase64Utf8(value) {
+    const bytes = new TextEncoder().encode(String(value));
+    let binary = '';
+    const chunk = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunk) {
+      binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+    }
+    return btoa(binary);
+  }
+
+  /* ============================================================
+   * 数据请求
+   * ============================================================ */
+  async function api(path, options) {
+    const opts = options || {};
+    if (!CONFIG_OK) {
+      throw new Error('请先在 index.html 顶部配置 SUPABASE_URL 和 SUPABASE_KEY');
+    }
+
+    const headers = {
+      apikey: SUPABASE_KEY,
+      Authorization: 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json'
+    };
+    // Supabase 的 CORS 允许 x-client-info；用它传递匿名成员名（Base64）
+    if (opts.name) headers['x-client-info'] = toBase64Utf8(opts.name);
+    if (opts.prefer) headers.Prefer = opts.prefer;
+
+    const controller = new AbortController();
+    const timer = setTimeout(function () { controller.abort(); }, 15000);
+    let response;
+
+    try {
+      response = await fetch(API_BASE + path, {
+        method: opts.method || 'GET',
+        headers: headers,
+        body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
+        signal: controller.signal
+      });
+    } catch (error) {
+      if (error && error.name === 'AbortError') {
+        throw new Error('请求超时，请检查网络后重试');
+      }
+      throw new Error('网络请求失败，请检查 API 地址、Key 和网络');
+    } finally {
+      clearTimeout(timer);
+    }
+
+    const text = await response.text();
+    let data = null;
+    if (text) {
+      try { data = JSON.parse(text); } catch (error) { data = text; }
+    }
+
+    if (!response.ok) {
+      let message = '';
+      if (data && typeof data === 'object') {
+        message = data.message || data.details || data.hint || '';
+      } else if (typeof data === 'string') {
+        message = data;
+      }
+      if ((response.status === 401 || response.status === 403) && !message) {
+        message = '数据库拒绝访问，请检查 anon key 与 RLS 策略';
+      }
+      const apiError = new Error(message || ('请求失败（HTTP ' + response.status + '）'));
+      apiError.status = response.status;
+      apiError.data = data;
+      throw apiError;
+    }
+
+    return data;
+  }
+
+  async function fetchProject(projectId) {
+    const rows = await api('/projects?id=eq.' + q(projectId) + '&select=*&limit=1');
+    if (!Array.isArray(rows) || !rows.length) {
+      throw new Error('项目不存在，请检查项目 ID');
+    }
+    return rows[0];
+  }
+
+  async function fetchExpenses(projectId) {
+    const rows = await api('/expenses?project_id=eq.' + q(projectId) + '&select=*&order=created_at.desc');
+    return Array.isArray(rows) ? rows : [];
+  }
+
+  function normalizeProject(raw) {
+    const data = raw || {};
+    const members = [];
+    const seen = new Set();
+    (Array.isArray(data.members) ? data.members : []).forEach(function (item) {
+      const name = String(item || '').trim();
+      if (name && !seen.has(name)) {
+        seen.add(name);
+        members.push(name);
+      }
+    });
+    return {
+      id: String(data.id || ''),
+      name: String(data.name || ''),
+      members: members,
+      created_at: data.created_at || null
+    };
+  }
+
+  function normalizeExpense(raw) {
+    const data = raw || {};
+    const sourceDetails = data.split_details && typeof data.split_details === 'object' && !Array.isArray(data.split_details)
+      ? data.split_details
+      : {};
+    const details = {};
+    Object.keys(sourceDetails).forEach(function (key) {
+      const value = Number(sourceDetails[key]);
+      if (Number.isFinite(value)) details[String(key)] = Math.trunc(value);
+    });
+    return {
+      id: String(data.id || ''),
+      project_id: String(data.project_id || ''),
+      title: String(data.title || ''),
+      amount_cents: Number(data.amount_cents) || 0,
+      payer: String(data.payer || ''),
+      participants: Array.isArray(data.participants) ? data.participants.map(String) : [],
+      split_mode: data.split_mode === 'custom' ? 'custom' : 'equal',
+      split_details: details,
+      created_by: String(data.created_by || ''),
+      created_at: data.created_at || new Date().toISOString()
+    };
+  }
+
+  /* ============================================================
+   * 结算算法
+   * 净额 = 垫付 - 应承担；贪心让欠款人直接还给应收人
+   * ============================================================ */
+  function computeSettlement(members, expenses) {
+    const stats = new Map();
+
+    function ensure(name) {
+      if (!name || stats.has(name)) return;
+      stats.set(name, { name: name, paid: 0, owed: 0, order: stats.size });
+    }
+
+    members.forEach(ensure);
+
+    expenses.forEach(function (expense) {
+      ensure(expense.payer);
+      const details = expense.split_details && typeof expense.split_details === 'object' ? expense.split_details : {};
+      Object.keys(details).forEach(ensure);
+    });
+
+    expenses.forEach(function (expense) {
+      const amount = Number(expense.amount_cents) || 0;
+      if (stats.has(expense.payer)) {
+        stats.get(expense.payer).paid += amount;
+      }
+      const details = expense.split_details && typeof expense.split_details === 'object' ? expense.split_details : {};
+      Object.keys(details).forEach(function (name) {
+        if (stats.has(name)) {
+          stats.get(name).owed += (Number(details[name]) || 0);
+        }
+      });
+    });
+
+    const balances = Array.from(stats.values()).map(function (item) {
+      return {
+        name: item.name,
+        paid: item.paid,
+        owed: item.owed,
+        net: item.paid - item.owed,
+        order: item.order
+      };
+    });
+
+    const totalCents = expenses.reduce(function (sum, expense) {
+      return sum + (Number(expense.amount_cents) || 0);
+    }, 0);
+    const residual = balances.reduce(function (sum, item) { return sum + item.net; }, 0);
+
+    const debtors = balances
+      .filter(function (item) { return item.net < 0; })
+      .map(function (item) { return { name: item.name, amount: -item.net, order: item.order }; })
+      .sort(function (a, b) { return b.amount - a.amount || a.order - b.order; });
+
+    const creditors = balances
+      .filter(function (item) { return item.net > 0; })
+      .map(function (item) { return { name: item.name, amount: item.net, order: item.order }; })
+      .sort(function (a, b) { return b.amount - a.amount || a.order - b.order; });
+
+    const transfers = [];
+    let debtorIndex = 0;
+    let creditorIndex = 0;
+
+    while (debtorIndex < debtors.length && creditorIndex < creditors.length) {
+      const transfer = Math.min(debtors[debtorIndex].amount, creditors[creditorIndex].amount);
+      if (transfer > 0) {
+        transfers.push({
+          from: debtors[debtorIndex].name,
+          to: creditors[creditorIndex].name,
+          amount: transfer
+        });
+      }
+      debtors[debtorIndex].amount -= transfer;
+      creditors[creditorIndex].amount -= transfer;
+
+      if (debtors[debtorIndex].amount === 0) debtorIndex++;
+      if (creditors[creditorIndex].amount === 0) creditorIndex++;
+    }
+
+    return {
+      balances: balances,
+      transfers: transfers,
+      totalCents: totalCents,
+      residual: residual
+    };
+  }
+
+  /* ============================================================
+   * 视图与渲染
+   * ============================================================ */
+  function cacheElements() {
+    els.setupView = document.getElementById('setupView');
+    els.projectView = document.getElementById('projectView');
+    els.configBanner = document.getElementById('configBanner');
+    els.createForm = document.getElementById('createForm');
+    els.projectName = document.getElementById('projectName');
+    els.memberNames = document.getElementById('memberNames');
+    els.createBtn = document.getElementById('createBtn');
+    els.joinForm = document.getElementById('joinForm');
+    els.joinId = document.getElementById('joinId');
+    els.joinBtn = document.getElementById('joinBtn');
+    els.projectNameTitle = document.getElementById('projectNameTitle');
+    els.projectMemberCount = document.getElementById('projectMemberCount');
+    els.projectIdValue = document.getElementById('projectIdValue');
+    els.copyIdBtn = document.getElementById('copyIdBtn');
+    els.shareBtn = document.getElementById('shareBtn');
+    els.refreshBtn = document.getElementById('refreshBtn');
+    els.leaveBtn = document.getElementById('leaveBtn');
+    els.identitySelect = document.getElementById('identitySelect');
+    els.identityBadge = document.getElementById('identityBadge');
+    els.identityHint = document.getElementById('identityHint');
+    els.expenseForm = document.getElementById('expenseForm');
+    els.expenseTitle = document.getElementById('expenseTitle');
+    els.expenseAmount = document.getElementById('expenseAmount');
+    els.payerInput = document.getElementById('payerInput');
+    els.equalPanel = document.getElementById('equalPanel');
+    els.customPanel = document.getElementById('customPanel');
+    els.equalMembers = document.getElementById('equalMembers');
+    els.customMembers = document.getElementById('customMembers');
+    els.selectAllBtn = document.getElementById('selectAllBtn');
+    els.equalShareHint = document.getElementById('equalShareHint');
+    els.customTotal = document.getElementById('customTotal');
+    els.customTarget = document.getElementById('customTarget');
+    els.customDiff = document.getElementById('customDiff');
+    els.saveExpenseBtn = document.getElementById('saveExpenseBtn');
+    els.settlementMeta = document.getElementById('settlementMeta');
+    els.settlementBody = document.getElementById('settlementBody');
+    els.expenseCount = document.getElementById('expenseCount');
+    els.expenseList = document.getElementById('expenseList');
+    els.toastContainer = document.getElementById('toastContainer');
+    els.confirmDialog = document.getElementById('confirmDialog');
+    els.confirmTitle = document.getElementById('confirmTitle');
+    els.confirmMessage = document.getElementById('confirmMessage');
+    els.confirmOk = document.getElementById('confirmOk');
+    els.confirmCancel = document.getElementById('confirmCancel');
+    els.loadingOverlay = document.getElementById('loadingOverlay');
+    els.loadingText = document.getElementById('loadingText');
+    els.year = document.getElementById('year');
+  }
+
+  function showSetup(clearHash) {
+    if (clearHash) {
+      try {
+        history.replaceState(null, '', location.pathname + location.search);
+      } catch (error) {
+        try { location.hash = ''; } catch (ignored) { /* ignore */ }
+      }
+    }
+    state.project = null;
+    state.expenses = [];
+    state.currentUser = '';
+    els.setupView.hidden = false;
+    els.projectView.hidden = true;
+    document.title = 'AA 分账 · 多人在线记账';
+  }
+
+  function showProjectView() {
+    els.setupView.hidden = true;
+    els.projectView.hidden = false;
+  }
+
+  function setLoading(visible, text) {
+    els.loadingText.textContent = text || '正在加载…';
+    els.loadingOverlay.hidden = !visible;
+  }
+
+  function setButtonBusy(button, busy, busyText) {
+    if (!button) return;
+    if (busy) {
+      if (button.dataset.idleHtml === undefined) button.dataset.idleHtml = button.innerHTML;
+      button.disabled = true;
+      button.setAttribute('aria-busy', 'true');
+      button.textContent = busyText;
+      button.classList.add('is-busy');
+    } else {
+      button.disabled = false;
+      button.removeAttribute('aria-busy');
+      if (button.dataset.idleHtml !== undefined) {
+        button.innerHTML = button.dataset.idleHtml;
+        delete button.dataset.idleHtml;
+      }
+      button.classList.remove('is-busy');
+    }
+  }
+
+  function toast(message, type, duration) {
+    const kind = type || 'info';
+    const node = document.createElement('div');
+    node.className = 'toast ' + kind;
+    node.setAttribute('role', kind === 'error' ? 'alert' : 'status');
+    node.innerHTML = '<span class="toast-dot" aria-hidden="true"></span><span class="toast-text">' + escapeHtml(message) + '</span>';
+    els.toastContainer.appendChild(node);
+
+    while (els.toastContainer.children.length > 3) {
+      els.toastContainer.removeChild(els.toastContainer.firstElementChild);
+    }
+
+    requestAnimationFrame(function () {
+      node.classList.add('is-visible');
+    });
+
+    const life = typeof duration === 'number' ? duration : (kind === 'error' ? 3600 : 2600);
+    setTimeout(function () {
+      node.classList.remove('is-visible');
+      node.classList.add('is-leaving');
+      setTimeout(function () { node.remove(); }, 230);
+    }, life);
+  }
+
+  function askConfirm(title, message, confirmText) {
+    if (!els.confirmDialog || typeof els.confirmDialog.showModal !== 'function') {
+      return Promise.resolve(window.confirm(title + '\n' + message));
+    }
+    els.confirmTitle.textContent = title;
+    els.confirmMessage.textContent = message;
+    els.confirmOk.textContent = confirmText || '删除';
+    els.confirmDialog.returnValue = '';
+    return new Promise(function (resolve) {
+      confirmResolve = resolve;
+      els.confirmDialog.showModal();
+    });
+  }
+
+  function renderProjectChrome() {
+    if (!state.project) return;
+    els.projectNameTitle.textContent = state.project.name || '未命名项目';
+    els.projectIdValue.textContent = state.project.id;
+    els.projectMemberCount.textContent = state.project.members.length + ' 位成员 · ' + state.expenses.length + ' 笔账目';
+    document.title = (state.project.name || 'AA 分账') + ' · AA 分账';
+  }
+
+  function renderIdentity() {
+    if (!state.project) return;
+    const options = ['<option value="">请选择你是谁</option>'].concat(
+      state.project.members.map(function (name) {
+        return '<option value="' + escapeHtml(name) + '">' + escapeHtml(name) + '</option>';
+      })
+    );
+    els.identitySelect.innerHTML = options.join('');
+    els.identitySelect.value = state.currentUser || '';
+    els.identityBadge.textContent = state.currentUser || '未选择';
+    els.payerInput.value = state.currentUser || '';
+    els.payerInput.placeholder = state.currentUser ? '' : '请先选择身份';
+    els.saveExpenseBtn.disabled = !state.currentUser;
+
+    if (state.currentUser) {
+      els.identityHint.textContent = '当前付款人已锁定为“' + state.currentUser + '”，切换身份会改变新账目的付款人。';
+    } else {
+      els.identityHint.textContent = '先选择“我是谁”，再开始记账；付款人会自动等于当前身份。';
+    }
+  }
+
+  function renderMemberControls() {
+    if (!state.project) return;
+    const members = state.project.members;
+
+    els.equalMembers.innerHTML = members.map(function (name) {
+      return '<label class="member-check">'
+        + '<input type="checkbox" name="equalMember" value="' + escapeHtml(name) + '" checked>'
+        + '<span class="member-check-face">' + avatarHtml(name) + '<span>' + escapeHtml(name) + '</span></span>'
+        + '</label>';
+    }).join('');
+
+    els.customMembers.innerHTML = members.map(function (name, index) {
+      return '<div class="custom-row">'
+        + '<div class="custom-name">' + avatarHtml(name) + '<span>' + escapeHtml(name) + '</span></div>'
+        + '<label class="mini-money"><span>¥</span><input type="text" inputmode="decimal" autocomplete="off" placeholder="0.00" data-custom-index="' + index + '" aria-label="' + escapeHtml(name) + '的金额"></label>'
+        + '</div>';
+    }).join('');
+
+    updateSelectAllLabel();
+    updateEqualPreview();
+    updateCustomTotals();
+  }
+
+  function updateSelectAllLabel() {
+    const boxes = $$('input[name="equalMember"]', els.equalPanel);
+    const checked = boxes.filter(function (box) { return box.checked; }).length;
+    els.selectAllBtn.textContent = (boxes.length && checked === boxes.length) ? '全不选' : '全选';
+  }
+
+  function updateEqualPreview() {
+    if (!els.equalPanel) return;
+    const total = parseYuanToCents(els.expenseAmount.value);
+    const boxes = $$('input[name="equalMember"]', els.equalPanel);
+    const selected = boxes.filter(function (box) { return box.checked; });
+
+    els.equalShareHint.classList.remove('is-warn');
+
+    if (total === null) {
+      els.equalShareHint.textContent = '输入总金额后显示每人份额。';
+      return;
+    }
+    if (!selected.length) {
+      els.equalShareHint.textContent = '请至少勾选一位参与分摊的成员。';
+      els.equalShareHint.classList.add('is-warn');
+      return;
+    }
+
+    const base = Math.floor(total / selected.length);
+    const remainder = total % selected.length;
+    if (remainder === 0) {
+      els.equalShareHint.textContent = '共 ' + selected.length + ' 人，每人 ' + formatCents(base) + '。';
+    } else {
+      els.equalShareHint.textContent = '共 ' + selected.length + ' 人：'
+        + remainder + ' 人承担 ' + formatCents(base + 1)
+        + '，' + (selected.length - remainder) + ' 人承担 ' + formatCents(base)
+        + '（按分精确分配余数）。';
+    }
+  }
+
+  function updateCustomTotals() {
+    if (!els.customMembers) return;
+    const inputs = $$('input[data-custom-index]', els.customMembers);
+    let sum = 0;
+    let invalid = false;
+
+    inputs.forEach(function (input) {
+      const raw = input.value.trim();
+      const box = input.closest('.mini-money');
+      if (!raw) {
+        box.classList.remove('is-invalid');
+        return;
+      }
+      const cents = parseYuanToCents(raw, { allowZero: true });
+      if (cents === null) {
+        invalid = true;
+        box.classList.add('is-invalid');
+      } else {
+        box.classList.remove('is-invalid');
+        sum += cents;
+      }
+    });
+
+    const total = parseYuanToCents(els.expenseAmount.value);
+    els.customTotal.textContent = formatCents(sum);
+    els.customTarget.textContent = total === null ? '—' : formatCents(total);
+
+    els.customDiff.className = 'sum-state';
+    if (invalid) {
+      els.customDiff.textContent = '有金额格式不正确';
+      els.customDiff.classList.add('is-error');
+    } else if (total === null) {
+      els.customDiff.textContent = '请先填写总金额';
+    } else if (sum === total) {
+      els.customDiff.textContent = '金额已匹配';
+      els.customDiff.classList.add('is-ok');
+    } else if (sum < total) {
+      els.customDiff.textContent = '还差 ' + formatCents(total - sum);
+      els.customDiff.classList.add('is-warn');
+    } else {
+      els.customDiff.textContent = '超出 ' + formatCents(sum - total);
+      els.customDiff.classList.add('is-error');
+    }
+  }
+
+  function setSplitMode(mode) {
+    state.splitMode = mode === 'custom' ? 'custom' : 'equal';
+
+    $$('input[name="splitMode"]', els.expenseForm).forEach(function (radio) {
+      radio.checked = radio.value === state.splitMode;
+    });
+    $$('.mode-option', els.expenseForm).forEach(function (label) {
+      label.classList.toggle('is-selected', label.dataset.mode === state.splitMode);
+    });
+
+    const equalActive = state.splitMode === 'equal';
+    els.equalPanel.classList.toggle('is-active', equalActive);
+    els.customPanel.classList.toggle('is-active', !equalActive);
+    els.equalPanel.toggleAttribute('inert', !equalActive);
+    els.customPanel.toggleAttribute('inert', equalActive);
+    els.equalPanel.setAttribute('aria-hidden', String(!equalActive));
+    els.customPanel.setAttribute('aria-hidden', String(equalActive));
+
+    if (equalActive) updateEqualPreview();
+    else updateCustomTotals();
+  }
+
+  function resetExpenseForm() {
+    if (!els.expenseForm) return;
+    els.expenseForm.reset();
+    els.expenseTitle.value = '';
+    els.expenseAmount.value = '';
+    setSplitMode('equal');
+    renderIdentity();
+    updateSelectAllLabel();
+    updateEqualPreview();
+    updateCustomTotals();
+  }
+
+  function renderSettlement() {
+    if (!state.project) return;
+    const result = computeSettlement(state.project.members, state.expenses);
+    els.settlementMeta.textContent = state.expenses.length
+      ? '共 ' + state.expenses.length + ' 笔 · 总支出 ' + formatCents(result.totalCents)
+      : '还没有账目';
+
+    if (!state.expenses.length) {
+      els.settlementBody.innerHTML = '<div class="empty">'
+        + '<div class="empty-icon" aria-hidden="true">Σ</div>'
+        + '<strong>还没有可以结算的账目</strong>'
+        + '<span>记录第一笔后，这里会自动算出净余额和转账方案。</span>'
+        + '</div>';
+      return;
+    }
+
+    const balanceHtml = result.balances.map(function (item) {
+      let text = '已结清';
+      let cls = 'zero';
+      if (item.net > 0) {
+        text = '应收 ' + formatCents(item.net);
+        cls = 'positive';
+      } else if (item.net < 0) {
+        text = '应付 ' + formatCents(-item.net);
+        cls = 'negative';
+      }
+      const me = state.currentUser === item.name ? '<span class="me">我</span>' : '';
+      return '<div class="balance-item">'
+        + '<div class="balance-person">' + avatarHtml(item.name) + '<span class="name">' + escapeHtml(item.name) + '</span>' + me + '</div>'
+        + '<div class="balance-net ' + cls + '">' + text + '</div>'
+        + '</div>';
+    }).join('');
+
+    let transferHtml = '';
+    if (result.transfers.length) {
+      transferHtml = '<div class="subsection-title">转账方案</div><ol class="transfer-list">'
+        + result.transfers.map(function (transfer) {
+          return '<li class="transfer-item">'
+            + '<div class="transfer-route">'
+            + avatarHtml(transfer.from) + '<b>' + escapeHtml(transfer.from) + '</b>'
+            + '<span class="transfer-arrow" aria-hidden="true">→</span>'
+            + avatarHtml(transfer.to) + '<b>' + escapeHtml(transfer.to) + '</b>'
+            + '</div>'
+            + '<span class="transfer-amount">' + formatCents(transfer.amount) + '</span>'
+            + '</li>';
+        }).join('')
+        + '</ol>';
+    } else {
+      transferHtml = '<div class="settled"><span class="settled-icon" aria-hidden="true">✓</span><span>当前已全部结清，不需要转账。</span></div>';
+    }
+
+    const warning = result.residual !== 0
+      ? '<div class="notice">检测到分摊合计与账目总额存在 ' + formatCents(result.residual) + ' 的差额，请检查账目数据。</div>'
+      : '';
+
+    els.settlementBody.innerHTML = '<div class="balance-grid">' + balanceHtml + '</div>' + transferHtml + warning;
+  }
+
+  function splitText(expense) {
+    const details = expense.split_details || {};
+    const members = state.project ? state.project.members : [];
+
+    if (expense.split_mode === 'custom') {
+      const names = [];
+      const seen = new Set();
+      members.forEach(function (name) {
+        if (Number(details[name]) > 0 && !seen.has(name)) {
+          seen.add(name);
+          names.push(name);
+        }
+      });
+      Object.keys(details).forEach(function (name) {
+        if (Number(details[name]) > 0 && !seen.has(name)) {
+          seen.add(name);
+          names.push(name);
+        }
+      });
+      if (!names.length) return '<span class="split-label">自定义：</span>—';
+      return '<span class="split-label">自定义：</span>' + names.map(function (name) {
+        return '<span class="split-person"><b>' + escapeHtml(name) + '</b> ' + formatCents(details[name]) + '</span>';
+      }).join('<span class="split-sep" aria-hidden="true">、</span>');
+    }
+
+    let names = Array.isArray(expense.participants) && expense.participants.length
+      ? expense.participants
+      : Object.keys(details);
+    names = Array.from(new Set(names.filter(Boolean)));
+    if (!names.length) return '<span class="split-label">均分：</span>—';
+    return '<span class="split-label">均分给：</span>' + names.map(function (name) {
+      const me = state.currentUser === name ? ' me' : '';
+      return '<span class="tag' + me + '">' + escapeHtml(name) + '</span>';
+    }).join('');
+  }
+
+  function renderExpenses() {
+    if (!state.project) return;
+    els.expenseCount.textContent = String(state.expenses.length);
+
+    if (!state.expenses.length) {
+      els.expenseList.innerHTML = '<div class="empty">'
+        + '<div class="empty-icon" aria-hidden="true">¥</div>'
+        + '<strong>还没有账目</strong>'
+        + '<span>在上面记下第一笔吧。</span>'
+        + '</div>';
+      return;
+    }
+
+    const sorted = state.expenses.slice().sort(function (a, b) {
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+
+    els.expenseList.innerHTML = sorted.map(function (expense) {
+      const canDelete = Boolean(state.currentUser) && expense.created_by === state.currentUser;
+      const own = state.currentUser && expense.created_by === state.currentUser;
+      const date = formatDate(expense.created_at);
+      const meta = [
+        '付款人 <b>' + escapeHtml(expense.payer || '—') + '</b>',
+        '录入人 <b>' + escapeHtml(expense.created_by || '—') + '</b>' + (own ? '（我）' : ''),
+        date ? escapeHtml(date) : ''
+      ].filter(Boolean).join(' · ');
+
+      const deleteButton = canDelete
+        ? '<button class="icon-btn" type="button" data-delete="' + escapeHtml(expense.id) + '" aria-label="删除账目 ' + escapeHtml(expense.title) + '" title="删除这笔账目">'
+          + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="m19 6-1 14H6L5 6"/><path d="M10 11v5"/><path d="M14 11v5"/></svg>'
+          + '</button>'
+        : '';
+
+      return '<article class="expense-item">'
+        + '<div class="expense-body">'
+        + '<div class="expense-top"><h4 class="expense-title">' + escapeHtml(expense.title) + '</h4><span class="expense-amount">' + formatCents(expense.amount_cents) + '</span></div>'
+        + '<div class="expense-meta">' + meta + '</div>'
+        + '<div class="expense-split">' + splitText(expense) + '</div>'
+        + '</div>'
+        + deleteButton
+        + '</article>';
+    }).join('');
+  }
+
+  function renderAll() {
+    renderProjectChrome();
+    renderIdentity();
+    renderSettlement();
+    renderExpenses();
+  }
+
+  function setCurrentUser(name) {
+    if (!state.project) return;
+    const valid = state.project.members.includes(name) ? name : '';
+    state.currentUser = valid;
+    if (valid) storageSet(identityKey(state.project.id), valid);
+    else storageRemove(identityKey(state.project.id));
+    renderIdentity();
+    renderSettlement();
+    renderExpenses();
+    if (valid) toast('已切换为“' + valid + '”', 'success', 1900);
+  }
+
+  /* ============================================================
+   * 项目生命周期
+   * ============================================================ */
+  function enterProject(project, expenses, options) {
+    const opts = options || {};
+    state.project = normalizeProject(project);
+    state.expenses = (expenses || []).map(normalizeExpense);
+
+    const stored = storageGet(identityKey(state.project.id));
+    state.currentUser = stored && state.project.members.includes(stored) ? stored : '';
+
+    if (opts.replaceHash !== false) {
+      try { history.replaceState(null, '', '#/p/' + state.project.id); } catch (error) { /* ignore */ }
+    }
+
+    showProjectView();
+    renderMemberControls();
+    renderAll();
+    resetExpenseForm();
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }
+
+  async function openProject(rawId, options) {
+    if (state.loading) return false;
+    if (!CONFIG_OK) {
+      toast('请先在 index.html 顶部配置 SUPABASE_URL 和 SUPABASE_KEY', 'error');
+      return false;
+    }
+
+    const opts = options || {};
+    const projectId = String(rawId || '').trim().toUpperCase();
+    if (!/^[A-Za-z0-9_-]{3,32}$/.test(projectId)) {
+      toast('项目 ID 格式不正确', 'error');
+      return false;
+    }
+
+    state.loading = true;
+    setLoading(true, '正在加载项目…');
+
+    try {
+      const project = normalizeProject(await fetchProject(projectId));
+      setLoading(true, '正在加载账目…');
+      const expenses = await fetchExpenses(project.id);
+      enterProject(project, expenses, { replaceHash: opts.replaceHash !== false });
+      if (!state.currentUser) {
+        toast('项目已载入，请先选择“我是谁”', 'info', 3200);
+      }
+      return true;
+    } catch (error) {
+      toast('加载失败：' + humanError(error), 'error', 4200);
+      return false;
+    } finally {
+      state.loading = false;
+      setLoading(false);
+    }
+  }
+
+  async function insertProject(name, members) {
+    let lastError = null;
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const id = makeProjectId();
+      try {
+        const data = await api('/projects', {
+          method: 'POST',
+          body: { id: id, name: name, members: members },
+          prefer: 'return=representation'
+        });
+        if (Array.isArray(data) && data[0]) return data[0];
+        return { id: id, name: name, members: members, created_at: new Date().toISOString() };
+      } catch (error) {
+        lastError = error;
+        if (error && error.status === 409) continue;
+        throw error;
+      }
+    }
+    throw lastError || new Error('项目 ID 生成失败，请重试');
+  }
+
+  async function refreshProject(options) {
+    const opts = options || {};
+    if (!state.project || state.loading) return;
+
+    state.loading = true;
+    els.refreshBtn.disabled = true;
+    els.refreshBtn.setAttribute('aria-busy', 'true');
+    const icon = els.refreshBtn.querySelector('svg');
+    if (icon) icon.classList.add('refresh-spin');
+
+    try {
+      const project = normalizeProject(await fetchProject(state.project.id));
+      const expenses = await fetchExpenses(project.id);
+      const membersChanged = JSON.stringify(project.members) !== JSON.stringify(state.project.members);
+
+      state.project = project;
+      state.expenses = expenses.map(normalizeExpense);
+      if (state.currentUser && !project.members.includes(state.currentUser)) {
+        state.currentUser = '';
+      }
+
+      if (membersChanged) {
+        renderMemberControls();
+        resetExpenseForm();
+      }
+      renderAll();
+      if (opts.quiet !== true) toast('数据已刷新', 'success', 1900);
+    } catch (error) {
+      toast('刷新失败：' + humanError(error), 'error', 4200);
+    } finally {
+      state.loading = false;
+      els.refreshBtn.disabled = false;
+      els.refreshBtn.removeAttribute('aria-busy');
+      if (icon) icon.classList.remove('refresh-spin');
+    }
+  }
+
+  async function copyText(text) {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch (error) { /* fall through */ }
+
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.top = '0';
+    textarea.style.left = '-9999px';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    textarea.setSelectionRange(0, textarea.value.length);
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (error) { ok = false; }
+    textarea.remove();
+    return ok;
+  }
+
+  function shareUrl() {
+    if (!state.project) return '';
+    return location.href.split('#')[0] + '#/p/' + state.project.id;
+  }
+
+  async function handleShare() {
+    if (!state.project) return;
+    const url = shareUrl();
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: state.project.name + ' · AA 分账',
+          text: '一起来记 AA 账',
+          url: url
+        });
+        return;
+      } catch (error) {
+        if (error && error.name === 'AbortError') return;
+      }
+    }
+    const ok = await copyText(url);
+    toast(ok ? '分享链接已复制' : '复制失败，请手动复制地址栏链接', ok ? 'success' : 'error');
+  }
+
+  /* ============================================================
+   * 表单事件
+   * ============================================================ */
+  async function handleCreate(event) {
+    event.preventDefault();
+    if (!CONFIG_OK) {
+      toast('请先在 index.html 顶部配置数据库地址和 Key', 'error');
+      return;
+    }
+
+    const name = els.projectName.value.trim();
+    if (!name) {
+      toast('请输入项目名称', 'error');
+      els.projectName.focus();
+      return;
+    }
+    if (name.length > MAX_PROJECT_NAME) {
+      toast('项目名称不能超过 ' + MAX_PROJECT_NAME + ' 个字符', 'error');
+      return;
+    }
+
+    let members;
+    try {
+      members = parseMembers(els.memberNames.value);
+    } catch (error) {
+      toast(error.message, 'error');
+      els.memberNames.focus();
+      return;
+    }
+
+    setButtonBusy(els.createBtn, true, '创建中…');
+    try {
+      const project = await insertProject(name, members);
+      state.project = normalizeProject(project);
+      state.expenses = [];
+      state.currentUser = '';
+      enterProject(project, [], { replaceHash: true });
+      els.createForm.reset();
+      els.identitySelect.focus();
+      toast('项目创建成功，请先选择“我是谁”', 'success', 3300);
+    } catch (error) {
+      toast('创建失败：' + humanError(error), 'error', 4200);
+    } finally {
+      setButtonBusy(els.createBtn, false);
+    }
+  }
+
+  async function handleJoin(event) {
+    event.preventDefault();
+    const projectId = extractProjectId(els.joinId.value);
+    if (!projectId) {
+      toast('请输入项目 ID', 'error');
+      els.joinId.focus();
+      return;
+    }
+    if (!/^[A-Za-z0-9_-]{3,32}$/.test(projectId)) {
+      toast('项目 ID 格式不正确', 'error');
+      return;
+    }
+
+    setButtonBusy(els.joinBtn, true, '查找中…');
+    try {
+      const ok = await openProject(projectId, { replaceHash: true });
+      if (ok) {
+        els.joinForm.reset();
+        els.identitySelect.focus();
+      }
+    } finally {
+      setButtonBusy(els.joinBtn, false);
+    }
+  }
+
+  async function handleExpenseSubmit(event) {
+    event.preventDefault();
+    if (!state.project) return;
+    if (!CONFIG_OK) {
+      toast('请先在 index.html 顶部配置数据库地址和 Key', 'error');
+      return;
+    }
+    if (!state.currentUser) {
+      toast('请先在上方选择“我是谁”', 'error');
+      els.identitySelect.focus();
+      return;
+    }
+
+    const title = els.expenseTitle.value.trim();
+    if (!title) {
+      toast('请填写账目名称', 'error');
+      els.expenseTitle.focus();
+      return;
+    }
+    if (title.length > MAX_TITLE) {
+      toast('账目名称不能超过 ' + MAX_TITLE + ' 个字符', 'error');
+      return;
+    }
+
+    const amountCents = parseYuanToCents(els.expenseAmount.value);
+    if (amountCents === null) {
+      toast('请输入大于 0 的总金额，最多两位小数', 'error');
+      els.expenseAmount.focus();
+      return;
+    }
+
+    let details;
+    let participants;
+
+    if (state.splitMode === 'equal') {
+      const names = $$('input[name="equalMember"]:checked', els.equalPanel).map(function (input) {
+        return input.value;
+      });
+      if (!names.length) {
+        toast('请至少勾选一位参与分摊的成员', 'error');
+        return;
+      }
+      details = splitEqual(amountCents, names);
+      participants = names;
+    } else {
+      const inputs = $$('input[data-custom-index]', els.customMembers);
+      const values = {};
+      let sum = 0;
+      let invalid = false;
+
+      inputs.forEach(function (input) {
+        const index = Number(input.dataset.customIndex);
+        const member = state.project.members[index];
+        if (!member) return;
+        const raw = input.value.trim();
+        if (!raw) {
+          values[member] = 0;
+          input.closest('.mini-money').classList.remove('is-invalid');
+          return;
+        }
+        const cents = parseYuanToCents(raw, { allowZero: true });
+        if (cents === null) {
+          invalid = true;
+          input.closest('.mini-money').classList.add('is-invalid');
+          return;
+        }
+        input.closest('.mini-money').classList.remove('is-invalid');
+        values[member] = cents;
+        sum += cents;
+      });
+
+      if (invalid) {
+        toast('有成员金额格式不正确，请检查后重试', 'error');
+        return;
+      }
+      if (sum !== amountCents) {
+        const diff = amountCents - sum;
+        toast(diff > 0
+          ? '自定义金额还差 ' + formatCents(diff) + '，请调整到与总金额一致'
+          : '自定义金额超出 ' + formatCents(-diff) + '，请调整到与总金额一致', 'error', 3800);
+        return;
+      }
+
+      details = {};
+      participants = [];
+      state.project.members.forEach(function (member) {
+        const cents = values[member] || 0;
+        if (cents > 0) {
+          details[member] = cents;
+          participants.push(member);
+        }
+      });
+      if (!participants.length) {
+        toast('自定义分摊至少要有一人金额大于 0', 'error');
+        return;
+      }
+    }
+
+    const payload = {
+      id: makeExpenseId(),
+      project_id: state.project.id,
+      title: title,
+      amount_cents: amountCents,
+      payer: state.currentUser,
+      participants: participants,
+      split_mode: state.splitMode,
+      split_details: details,
+      created_by: state.currentUser
+    };
+
+    setButtonBusy(els.saveExpenseBtn, true, '保存中…');
+    try {
+      const data = await api('/expenses', {
+        method: 'POST',
+        body: payload,
+        prefer: 'return=representation',
+        name: state.currentUser
+      });
+      const saved = Array.isArray(data) && data[0] ? data[0] : payload;
+      state.expenses.unshift(normalizeExpense(saved));
+      renderSettlement();
+      renderExpenses();
+      renderProjectChrome();
+      resetExpenseForm();
+      toast('已记一笔 ' + formatCents(amountCents), 'success');
+    } catch (error) {
+      toast('保存失败：' + humanError(error), 'error', 4600);
+    } finally {
+      setButtonBusy(els.saveExpenseBtn, false);
+      els.saveExpenseBtn.disabled = !state.currentUser;
+    }
+  }
+
+  async function handleDelete(expenseId) {
+    const expense = state.expenses.find(function (item) { return item.id === expenseId; });
+    if (!expense) return;
+    if (!state.currentUser || expense.created_by !== state.currentUser) {
+      toast('只能删除自己录入的账目', 'error');
+      return;
+    }
+
+    const ok = await askConfirm(
+      '删除这笔账目？',
+      '“' + expense.title + '”将被永久删除，结算结果也会同步更新。',
+      '删除'
+    );
+    if (!ok) return;
+
+    const button = els.expenseList.querySelector('[data-delete="' + (window.CSS && CSS.escape ? CSS.escape(expenseId) : expenseId) + '"]');
+    if (button) button.disabled = true;
+
+    try {
+      await api('/expenses?id=eq.' + q(expense.id) + '&created_by=eq.' + q(state.currentUser), {
+        method: 'DELETE',
+        prefer: 'return=minimal',
+        name: state.currentUser
+      });
+      state.expenses = state.expenses.filter(function (item) { return item.id !== expense.id; });
+      renderSettlement();
+      renderExpenses();
+      renderProjectChrome();
+      toast('账目已删除', 'success');
+    } catch (error) {
+      if (button) button.disabled = false;
+      toast('删除失败：' + humanError(error), 'error', 4200);
+    }
+  }
+
+  /* ============================================================
+   * 事件绑定与启动
+   * ============================================================ */
+  function bindEvents() {
+    els.createForm.addEventListener('submit', handleCreate);
+    els.joinForm.addEventListener('submit', handleJoin);
+    els.expenseForm.addEventListener('submit', handleExpenseSubmit);
+
+    els.identitySelect.addEventListener('change', function (event) {
+      setCurrentUser(event.target.value);
+    });
+
+    els.refreshBtn.addEventListener('click', function () {
+      refreshProject();
+    });
+
+    els.leaveBtn.addEventListener('click', function () {
+      showSetup(true);
+      toast('已退出当前项目', 'info', 1800);
+    });
+
+    els.copyIdBtn.addEventListener('click', async function () {
+      if (!state.project) return;
+      const ok = await copyText(state.project.id);
+      toast(ok ? '项目 ID 已复制' : '复制失败，请手动选择复制', ok ? 'success' : 'error');
+    });
+
+    els.shareBtn.addEventListener('click', handleShare);
+
+    els.expenseForm.addEventListener('change', function (event) {
+      if (event.target.name === 'splitMode') {
+        setSplitMode(event.target.value);
+      }
+      if (event.target.name === 'equalMember') {
+        updateEqualPreview();
+        updateSelectAllLabel();
+      }
+    });
+
+    els.expenseAmount.addEventListener('input', function () {
+      updateEqualPreview();
+      updateCustomTotals();
+    });
+
+    els.selectAllBtn.addEventListener('click', function () {
+      const boxes = $$('input[name="equalMember"]', els.equalPanel);
+      const allChecked = boxes.length > 0 && boxes.every(function (box) { return box.checked; });
+      boxes.forEach(function (box) { box.checked = !allChecked; });
+      updateSelectAllLabel();
+      updateEqualPreview();
+    });
+
+    els.customMembers.addEventListener('input', function (event) {
+      if (event.target.matches('input[data-custom-index]')) updateCustomTotals();
+    });
+
+    els.expenseList.addEventListener('click', function (event) {
+      const button = event.target.closest('[data-delete]');
+      if (!button) return;
+      handleDelete(button.dataset.delete);
+    });
+
+    els.confirmOk.addEventListener('click', function () {
+      els.confirmDialog.close('confirm');
+    });
+    els.confirmCancel.addEventListener('click', function () {
+      els.confirmDialog.close('cancel');
+    });
+    els.confirmDialog.addEventListener('close', function () {
+      if (confirmResolve) {
+        const result = els.confirmDialog.returnValue === 'confirm';
+        confirmResolve(result);
+        confirmResolve = null;
+      }
+    });
+    els.confirmDialog.addEventListener('click', function (event) {
+      if (event.target === els.confirmDialog) {
+        els.confirmDialog.close('cancel');
+      }
+    });
+
+    window.addEventListener('hashchange', function () {
+      const id = parseHash();
+      if (!id) {
+        if (state.project && !state.loading) showSetup(false);
+        return;
+      }
+      if (!state.project || id !== state.project.id) {
+        openProject(id, { replaceHash: false });
+      }
+    });
+  }
+
+  function init() {
+    cacheElements();
+    bindEvents();
+    els.year.textContent = String(new Date().getFullYear());
+    els.configBanner.hidden = CONFIG_OK;
+    setSplitMode('equal');
+
+    const id = parseHash();
+    if (id) {
+      openProject(id, { replaceHash: false }).then(function (ok) {
+        if (!ok) showSetup(true);
+      });
+    } else {
+      showSetup(false);
+    }
+  }
+
+  if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  }
+
+  // 供离线单元测试使用（浏览器中不会触发）
+  if (typeof globalThis !== 'undefined' && globalThis.__AA_TEST_MODE__) {
+    globalThis.__AA = {
+      parseYuanToCents: parseYuanToCents,
+      splitEqual: splitEqual,
+      computeSettlement: computeSettlement,
+      parseMembers: parseMembers,
+      formatCents: formatCents,
+      normalizeExpense: normalizeExpense,
+      normalizeProject: normalizeProject,
+      makeProjectId: makeProjectId,
+      toBase64Utf8: toBase64Utf8
+    };
+  }
+})();
+</script>
+</body>
+</html>
